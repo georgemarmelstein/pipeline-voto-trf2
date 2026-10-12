@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat JULIA - SuperJurista</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        /* Reset e base */
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .chat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 24px;
+            background: var(--cor-fundo-secundaria, #1a1a2e);
+            border-bottom: 1px solid var(--cor-borda, #2d2d44);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .chat-header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .chat-header h1 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--cor-texto-primario, #e0e0e0);
+        }
+
+        .chat-header-subtitle {
+            font-size: 0.85rem;
+            color: var(--cor-texto-terciario, #888);
+            margin-left: 8px;
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.75rem;
+            color: var(--cor-texto-terciario, #888);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #888;
+        }
+
+        .status-dot.connected {
+            background: #4ade80;
+        }
+
+        .status-dot.disconnected {
+            background: #f87171;
+        }
+
+        .status-dot.connecting {
+            background: #fbbf24;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .btn-voltar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: transparent;
+            border: 1px solid var(--cor-borda, #2d2d44);
+            border-radius: 6px;
+            color: var(--cor-texto-secundario, #b0b0b0);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .btn-voltar:hover {
+            background: var(--cor-fundo-terciaria, #252540);
+            border-color: var(--cor-primaria, #6366f1);
+            color: var(--cor-texto-primario, #e0e0e0);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-limpar {
+            padding: 8px 16px;
+            background: transparent;
+            border: 1px solid var(--cor-borda, #2d2d44);
+            border-radius: 6px;
+            color: var(--cor-texto-secundario, #b0b0b0);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-limpar:hover {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+
+        /* Container principal */
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 900px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 0;
+        }
+
+        /* Area de mensagens */
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* Mensagem individual */
+        .message {
+            display: flex;
+            flex-direction: column;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message-user {
+            align-items: flex-end;
+        }
+
+        .message-assistant {
+            align-items: flex-start;
+        }
+
+        .message-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            color: var(--cor-texto-terciario, #888);
+        }
+
+        .message-content {
+            max-width: 85%;
+            padding: 16px 20px;
+            border-radius: 12px;
+            line-height: 1.6;
+        }
+
+        .message-user .message-content {
+            background: var(--cor-primaria, #6366f1);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message-assistant .message-content {
+            background: var(--cor-fundo-terciaria, #252540);
+            color: var(--cor-texto-primario, #e0e0e0);
+            border-bottom-left-radius: 4px;
+        }
+
+        /* Markdown na resposta */
+        .message-assistant .message-content h1,
+        .message-assistant .message-content h2,
+        .message-assistant .message-content h3 {
+            color: var(--cor-primaria, #6366f1);
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+        }
+
+        .message-assistant .message-content h1:first-child,
+        .message-assistant .message-content h2:first-child,
+        .message-assistant .message-content h3:first-child {
+            margin-top: 0;
+        }
+
+        .message-assistant .message-content ul,
+        .message-assistant .message-content ol {
+            padding-left: 1.5em;
+            margin: 0.5em 0;
+        }
+
+        .message-assistant .message-content li {
+            margin: 0.3em 0;
+        }
+
+        .message-assistant .message-content strong {
+            color: var(--cor-primaria-light, #818cf8);
+        }
+
+        .message-assistant .message-content code {
+            background: var(--cor-fundo-secundaria, #1a1a2e);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        .message-assistant .message-content pre {
+            background: var(--cor-fundo-secundaria, #1a1a2e);
+            padding: 12px;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+
+        .message-assistant .message-content a {
+            color: var(--cor-primaria-light, #818cf8);
+            text-decoration: underline;
+        }
+
+        .message-assistant .message-content blockquote {
+            border-left: 3px solid var(--cor-primaria, #6366f1);
+            margin: 1em 0;
+            padding-left: 1em;
+            color: var(--cor-texto-secundario, #b0b0b0);
+        }
+
+        .message-assistant .message-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1em 0;
+        }
+
+        .message-assistant .message-content th,
+        .message-assistant .message-content td {
+            border: 1px solid var(--cor-borda, #2d2d44);
+            padding: 8px 12px;
+            text-align: left;
+        }
+
+        .message-assistant .message-content th {
+            background: var(--cor-fundo-secundaria, #1a1a2e);
+        }
+
+        /* Mensagem de erro */
+        .message-error .message-content {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+        }
+
+        /* Loading - typing indicator */
+        .message-loading .message-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background: var(--cor-primaria, #6366f1);
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+        /* Streaming text cursor */
+        .streaming::after {
+            content: '|';
+            animation: blink 0.7s infinite;
+            color: var(--cor-primaria, #6366f1);
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* Welcome message */
+        .welcome-message {
+            text-align: center;
+            padding: 48px 24px;
+            color: var(--cor-texto-secundario, #b0b0b0);
+        }
+
+        .welcome-message h2 {
+            color: var(--cor-texto-primario, #e0e0e0);
+            margin-bottom: 16px;
+        }
+
+        .welcome-message p {
+            margin-bottom: 24px;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .example-queries {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .example-btn {
+            padding: 8px 16px;
+            background: var(--cor-fundo-terciaria, #252540);
+            border: 1px solid var(--cor-borda, #2d2d44);
+            border-radius: 20px;
+            color: var(--cor-texto-secundario, #b0b0b0);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .example-btn:hover {
+            background: var(--cor-primaria, #6366f1);
+            border-color: var(--cor-primaria, #6366f1);
+            color: white;
+        }
+
+        /* Input area */
+        .chat-input-area {
+            padding: 16px 24px 24px;
+            background: var(--cor-fundo-primaria, #0f0f1a);
+            border-top: 1px solid var(--cor-borda, #2d2d44);
+        }
+
+        .chat-input-container {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 14px 18px;
+            background: var(--cor-fundo-secundaria, #1a1a2e);
+            border: 1px solid var(--cor-borda, #2d2d44);
+            border-radius: 12px;
+            color: var(--cor-texto-primario, #e0e0e0);
+            font-size: 1rem;
+            font-family: inherit;
+            resize: none;
+            min-height: 52px;
+            max-height: 150px;
+            line-height: 1.5;
+            transition: border-color 0.2s;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: var(--cor-primaria, #6366f1);
+        }
+
+        .chat-input::placeholder {
+            color: var(--cor-texto-terciario, #888);
+        }
+
+        .chat-input:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-send {
+            padding: 14px 24px;
+            background: var(--cor-primaria, #6366f1);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-send:hover:not(:disabled) {
+            background: var(--cor-primaria-hover, #4f46e5);
+        }
+
+        .btn-send:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .chat-footer-info {
+            text-align: center;
+            margin-top: 12px;
+            font-size: 0.75rem;
+            color: var(--cor-texto-terciario, #666);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .chat-header {
+                padding: 12px 16px;
+            }
+
+            .chat-header h1 {
+                font-size: 1rem;
+            }
+
+            .chat-header-subtitle {
+                display: none;
+            }
+
+            .chat-messages {
+                padding: 16px;
+            }
+
+            .message-content {
+                max-width: 95%;
+            }
+
+            .chat-input-area {
+                padding: 12px 16px 16px;
+            }
+
+            .btn-send span {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body class="tema-escuro">
+    <!-- Header -->
+    <header class="chat-header">
+        <div class="chat-header-left">
+            <a href="/" class="btn-voltar">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+                Kanban
+            </a>
+            <h1>Chat JULIA <span class="chat-header-subtitle">Jurisprudencia TRF5</span></h1>
+            <div class="connection-status">
+                <span id="status-dot" class="status-dot connecting"></span>
+                <span id="status-text">Conectando...</span>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button id="btn-limpar" class="btn-limpar">Nova conversa</button>
+        </div>
+    </header>
+
+    <!-- Chat container -->
+    <div class="chat-container">
+        <!-- Messages -->
+        <div id="chat-messages" class="chat-messages">
+            <!-- Welcome message -->
+            <div class="welcome-message" id="welcome">
+                <h2>Pesquisa de Jurisprudencia JULIA</h2>
+                <p>
+                    Faca perguntas em linguagem natural sobre jurisprudencia do TRF5.
+                    O assistente entendera sua necessidade e pesquisara no sistema JULIA.
+                </p>
+                <div class="example-queries">
+                    <button type="button" class="example-btn">Qual a posicao do TRF5 sobre BPC para estrangeiros?</button>
+                    <button type="button" class="example-btn">Busque decisoes sobre aposentadoria especial de eletricista</button>
+                    <button type="button" class="example-btn">O que diz a 1a Turma sobre prescricao quinquenal?</button>
+                    <button type="button" class="example-btn">Pensao por morte para companheiro homoafetivo</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input area -->
+        <div class="chat-input-area">
+            <form id="chat-form" class="chat-input-container">
+                <textarea
+                    id="chat-input"
+                    class="chat-input"
+                    placeholder="Digite sua pergunta sobre jurisprudencia do TRF5..."
+                    rows="1"
+                ></textarea>
+                <button type="submit" id="btn-send" class="btn-send">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                    </svg>
+                    <span>Enviar</span>
+                </button>
+            </form>
+            <div class="chat-footer-info">
+                Powered by Claude Code + MCP JULIA (TRF5) | Sessao persistente com memoria
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let ws = null;
+        let sessionId = null;
+        let isProcessing = false;
+        let currentAssistantMessage = null;
+        let reconnectAttempts = 0;
+        const MAX_RECONNECT_ATTEMPTS = 5;
+
+        // DOM elements
+        const chatMessages = document.getElementById('chat-messages');
+        const chatForm = document.getElementById('chat-form');
+        const chatInput = document.getElementById('chat-input');
+        const btnSend = document.getElementById('btn-send');
+        const btnLimpar = document.getElementById('btn-limpar');
+        const welcomeMessage = document.getElementById('welcome');
+        const statusDot = document.getElementById('status-dot');
+        const statusText = document.getElementById('status-text');
+
+        // WebSocket connection
+        function connectWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/api/julia/ws`;
+
+            updateConnectionStatus('connecting');
+
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = () => {
+                console.log('[JULIA] WebSocket conectado');
+                updateConnectionStatus('connected');
+                reconnectAttempts = 0;
+            };
+
+            ws.onclose = (event) => {
+                console.log('[JULIA] WebSocket desconectado:', event.code);
+                updateConnectionStatus('disconnected');
+
+                // Tentar reconectar
+                if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+                    reconnectAttempts++;
+                    const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
+                    console.log(`[JULIA] Reconectando em ${delay}ms (tentativa ${reconnectAttempts})`);
+                    setTimeout(connectWebSocket, delay);
+                }
+            };
+
+            ws.onerror = (error) => {
+                console.error('[JULIA] Erro WebSocket:', error);
+            };
+
+            ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    handleServerMessage(data);
+                } catch (e) {
+                    console.error('[JULIA] Erro ao parsear mensagem:', e);
+                }
+            };
+        }
+
+        function updateConnectionStatus(status) {
+            statusDot.className = 'status-dot ' + status;
+            switch (status) {
+                case 'connected':
+                    statusText.textContent = 'Conectado';
+                    break;
+                case 'disconnected':
+                    statusText.textContent = 'Desconectado';
+                    break;
+                case 'connecting':
+                    statusText.textContent = 'Conectando...';
+                    break;
+            }
+        }
+
+        function handleServerMessage(data) {
+            switch (data.type) {
+                case 'processing':
+                    // Salvar session_id
+                    if (data.session_id) {
+                        sessionId = data.session_id;
+                    }
+                    // Mostrar indicador de digitacao
+                    showTypingIndicator();
+                    break;
+
+                case 'delta':
+                    // Atualizar mensagem em tempo real
+                    updateStreamingMessage(data.content);
+                    break;
+
+                case 'complete':
+                    // Finalizar mensagem
+                    finalizeMessage(data.content);
+                    if (data.session_id) {
+                        sessionId = data.session_id;
+                    }
+                    break;
+
+                case 'error':
+                    // Mostrar erro
+                    removeTypingIndicator();
+                    addMessage('error', data.content);
+                    setProcessing(false);
+                    break;
+            }
+        }
+
+        function showTypingIndicator() {
+            removeTypingIndicator();
+
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'message message-assistant message-loading';
+            msgDiv.id = 'typing-indicator';
+
+            const labelDiv = document.createElement('div');
+            labelDiv.className = 'message-label';
+            labelDiv.textContent = 'JULIA';
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.innerHTML = `
+                <div class="typing-indicator">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <span>Pensando...</span>
+            `;
+
+            msgDiv.appendChild(labelDiv);
+            msgDiv.appendChild(contentDiv);
+            chatMessages.appendChild(msgDiv);
+            msgDiv.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }
+
+        function removeTypingIndicator() {
+            const indicator = document.getElementById('typing-indicator');
+            if (indicator) {
+                indicator.remove();
+            }
+        }
+
+        function updateStreamingMessage(deltaContent) {
+            removeTypingIndicator();
+
+            if (!currentAssistantMessage) {
+                // Criar nova mensagem
+                const msgDiv = document.createElement('div');
+                msgDiv.className = 'message message-assistant';
+                msgDiv.id = 'streaming-message';
+
+                const labelDiv = document.createElement('div');
+                labelDiv.className = 'message-label';
+                labelDiv.textContent = 'JULIA';
+
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'message-content streaming';
+                contentDiv.dataset.rawContent = '';
+
+                msgDiv.appendChild(labelDiv);
+                msgDiv.appendChild(contentDiv);
+                chatMessages.appendChild(msgDiv);
+
+                currentAssistantMessage = contentDiv;
+            }
+
+            // Acumular conteudo
+            currentAssistantMessage.dataset.rawContent += deltaContent;
+
+            // Renderizar markdown
+            currentAssistantMessage.innerHTML = marked.parse(currentAssistantMessage.dataset.rawContent);
+
+            // Scroll
+            currentAssistantMessage.parentElement.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }
+
+        function finalizeMessage(fullContent) {
+            removeTypingIndicator();
+
+            if (currentAssistantMessage) {
+                // Remover cursor de streaming
+                currentAssistantMessage.classList.remove('streaming');
+
+                // Usar conteudo final se fornecido
+                if (fullContent) {
+                    currentAssistantMessage.innerHTML = marked.parse(fullContent);
+                }
+
+                currentAssistantMessage.parentElement.id = '';
+                currentAssistantMessage = null;
+            } else if (fullContent) {
+                // Nenhuma mensagem streaming, criar uma nova
+                addMessage('assistant', fullContent);
+            }
+
+            setProcessing(false);
+        }
+
+        function setProcessing(processing) {
+            isProcessing = processing;
+            btnSend.disabled = processing;
+            chatInput.disabled = processing;
+
+            if (!processing) {
+                chatInput.focus();
+            }
+        }
+
+        // Auto-resize textarea
+        chatInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 150) + 'px';
+        });
+
+        // Submit with Enter (Shift+Enter for new line)
+        chatInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                e.stopPropagation();
+                sendMessage(chatInput.value);
+            }
+        });
+
+        // Funcao central de envio de mensagem
+        function sendMessage(messageText) {
+            const message = messageText.trim();
+            console.log('[JULIA] sendMessage:', message, 'isProcessing:', isProcessing);
+
+            if (!message || isProcessing) {
+                console.log('[JULIA] Blocked: empty or processing');
+                return false;
+            }
+
+            // Verificar conexao
+            console.log('[JULIA] WS state:', ws ? ws.readyState : 'null');
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                addMessage('error', 'Conexao perdida. Reconectando...');
+                connectWebSocket();
+                return false;
+            }
+
+            // Hide welcome
+            if (welcomeMessage) {
+                welcomeMessage.style.display = 'none';
+            }
+
+            // Add user message
+            addMessage('user', message);
+
+            // Clear input
+            chatInput.value = '';
+            chatInput.style.height = 'auto';
+
+            // Set processing state
+            setProcessing(true);
+
+            // Send via WebSocket
+            const payload = JSON.stringify({
+                message: message,
+                session_id: sessionId
+            });
+            console.log('[JULIA] Sending:', payload);
+            ws.send(payload);
+            return true;
+        }
+
+        // Example buttons
+        document.querySelectorAll('.example-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                sendMessage(btn.textContent);
+            });
+        });
+
+        // Clear chat / New conversation
+        btnLimpar.addEventListener('click', () => {
+            if (confirm('Iniciar nova conversa? O historico atual sera perdido.')) {
+                chatMessages.innerHTML = '';
+                chatMessages.appendChild(welcomeMessage);
+                welcomeMessage.style.display = 'block';
+                sessionId = null;
+                currentAssistantMessage = null;
+
+                // Reconectar para nova sessao
+                if (ws) {
+                    ws.close();
+                }
+                setTimeout(connectWebSocket, 100);
+            }
+        });
+
+        // Submit handler
+        chatForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            sendMessage(chatInput.value);
+            return false;
+        });
+
+        // Add message to chat
+        function addMessage(type, content) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message message-${type}`;
+
+            const labelDiv = document.createElement('div');
+            labelDiv.className = 'message-label';
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+
+            if (type === 'user') {
+                labelDiv.textContent = 'Voce';
+                contentDiv.textContent = content;
+            } else if (type === 'assistant') {
+                labelDiv.textContent = 'JULIA';
+                contentDiv.innerHTML = marked.parse(content);
+            } else if (type === 'error') {
+                labelDiv.textContent = 'Erro';
+                contentDiv.textContent = content;
+            }
+
+            msgDiv.appendChild(labelDiv);
+            msgDiv.appendChild(contentDiv);
+            chatMessages.appendChild(msgDiv);
+
+            // Scroll to bottom
+            msgDiv.scrollIntoView({ behavior: 'smooth', block: 'end' });
+
+            return msgDiv;
+        }
+
+        // Initialize
+        connectWebSocket();
+    </script>
+</body>
+</html>

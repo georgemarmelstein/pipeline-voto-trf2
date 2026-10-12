@@ -1,0 +1,17 @@
+# SuperJurista Kanban - Dependencias
+# Python 3.10+
+
+# Web Framework
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+
+# Data Validation
+pydantic>=2.0.0
+
+# File upload support
+python-multipart>=0.0.6
+
+# Async support (incluso no uvicorn[standard])
+# httptools
+# uvloop (Linux/Mac only)
+# websockets

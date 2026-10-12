@@ -1,0 +1,19 @@
+# Dados de processos: NUNCA versionar (autos reais, minutas, pesquisas)
+data/
+output/
+
+# Credenciais e sessões
+.env
+*.env
+pje_session.json
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+
+# Sistema
+.DS_Store
+Thumbs.db

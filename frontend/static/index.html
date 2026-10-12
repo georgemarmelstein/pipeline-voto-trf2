@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SuperJurista - Inteligencia Aumentada</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="tema-escuro">
+    <!-- ====== HEADER TIER 1: Branding + Global ====== -->
+    <header class="header-primary">
+        <div class="header-brand">
+            <a href="/" class="logo" title="Voltar ao inicio">
+                <div class="logo-text-group">
+                    <span class="logo-text">SuperJurista</span>
+                    <span class="logo-subtitle">Inteligencia Aumentada</span>
+                </div>
+            </a>
+        </div>
+
+        <div class="header-search">
+            <div class="search-wrapper">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                </svg>
+                <input type="text" id="busca" placeholder="Buscar processo, tema ou conteudo...">
+                <kbd class="search-shortcut">Ctrl+K</kbd>
+            </div>
+        </div>
+
+        <div class="header-utilities">
+            <a href="/chat" class="btn-julia" title="Pesquisar Jurisprudencia no JULIA">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/>
+                    <path d="m21 21-4.35-4.35"/>
+                    <path d="M8 8v4h3"/>
+                </svg>
+                <span>JULIA</span>
+            </a>
+            <button id="btn-tema" class="btn-tema-toggle" title="Alternar tema claro/escuro">
+                <span class="icon-sol">&#9788;</span>
+                <span class="icon-lua">&#9790;</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- ====== HEADER TIER 2: Context + Filters ====== -->
+    <nav class="header-context">
+        <div class="context-left">
+            <h2 class="context-title">Processos</h2>
+        </div>
+
+        <div class="context-right">
+            <div class="filter-group">
+                <button id="btn-toggle-filters" class="btn-filter-toggle" title="Mostrar/ocultar filtros">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+                    </svg>
+                    <span>Filtros</span>
+                    <span id="filter-count" class="filter-count hidden">0</span>
+                </button>
+
+                <div id="filters-panel" class="filters-panel">
+                    <div class="filtro-ordenacao-group">
+                        <svg class="ordenacao-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 6h18M6 12h12M9 18h6"/>
+                        </svg>
+                        <select id="filtro-ordenacao" class="filtro-select filtro-ordenacao">
+                            <option value="antigo">Mais Antigo</option>
+                            <option value="tema">Temas Comuns</option>
+                            <option value="conclusao">Ordem de Conclusao</option>
+                            <option value="prioridade">Prioridades</option>
+                        </select>
+                    </div>
+                    <span class="filtro-separator"></span>
+                    <select id="filtro-tipo" class="filtro-select">
+                        <option value="">Todos os Tipos</option>
+                        <option value="sentenca">Sentenca</option>
+                        <option value="decisao">Decisao</option>
+                        <option value="despacho">Despacho</option>
+                        <option value="voto">Voto</option>
+                    </select>
+                    <select id="filtro-tema" class="filtro-select">
+                        <option value="">Todos os Temas</option>
+                    </select>
+                    <select id="filtro-urgencia" class="filtro-select">
+                        <option value="">Urgencia</option>
+                        <option value="critica">Critica</option>
+                        <option value="alta">Alta</option>
+                        <option value="normal">Normal</option>
+                    </select>
+                    <select id="filtro-prioridade" class="filtro-select">
+                        <option value="">Prioridade Legal</option>
+                        <option value="idoso">Idoso</option>
+                        <option value="deficiente">Pessoa com Deficiencia</option>
+                        <option value="doenca_grave">Doenca Grave</option>
+                        <option value="reu_preso">Reu Preso</option>
+                    </select>
+                    <select id="filtro-dias" class="filtro-select">
+                        <option value="">Dias Concluso</option>
+                        <option value="30">+30 dias</option>
+                        <option value="60">+60 dias</option>
+                        <option value="100">+100 dias</option>
+                    </select>
+                    <button id="btn-limpar-filtros" class="btn-limpar" title="Limpar filtros">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="action-group">
+                <button id="btn-desfazer" class="btn-action" title="Desfazer ultima acao" disabled>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+                    </svg>
+                </button>
+                <button id="btn-atualizar" class="btn-action" title="Atualizar lista">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="stats-badge">
+                <span id="contador" class="contador">0</span>
+                <span class="contador-label">processos</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ====== FILTRO ATIVO INDICATOR ====== -->
+    <div id="foco-ativo" class="foco-ativo hidden">
+        <div class="foco-content">
+            <span class="foco-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+                </svg>
+            </span>
+            <span id="foco-label"></span>
+            <span id="foco-count" class="foco-count-badge"></span>
+            <button id="btn-limpar-foco" class="btn-limpar-foco" title="Limpar filtro">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- ====== KANBAN MAIN ====== -->
+    <main class="kanban-container">
+        <!-- Workflow Progress Bar -->
+        <div class="workflow-progress">
+            <div class="workflow-step" data-step="por-analisar">
+                <span class="step-dot"></span>
+                <span class="step-line"></span>
+            </div>
+            <div class="workflow-step" data-step="analisando">
+                <span class="step-dot"></span>
+                <span class="step-line"></span>
+            </div>
+            <div class="workflow-step" data-step="pendencias">
+                <span class="step-dot"></span>
+                <span class="step-line"></span>
+            </div>
+            <div class="workflow-step" data-step="validado">
+                <span class="step-dot"></span>
+            </div>
+        </div>
+
+        <div class="kanban-board">
+            <div class="kanban-coluna" data-estado="por-analisar">
+                <div class="coluna-header">
+                    <div class="coluna-titulo">
+                        <span class="coluna-icon entrada"></span>
+                        <h2>Por Analisar</h2>
+                    </div>
+                    <span class="count">0</span>
+                </div>
+                <div class="kanban-cards"></div>
+            </div>
+            <div class="kanban-coluna" data-estado="analisando">
+                <div class="coluna-header">
+                    <div class="coluna-titulo">
+                        <span class="coluna-icon progresso"></span>
+                        <h2>Pesquisar</h2>
+                    </div>
+                    <span class="count">0</span>
+                </div>
+                <div class="kanban-cards"></div>
+            </div>
+            <div class="kanban-coluna" data-estado="pendencias">
+                <div class="coluna-header">
+                    <div class="coluna-titulo">
+                        <span class="coluna-icon alerta"></span>
+                        <h2>Complexo</h2>
+                    </div>
+                    <span class="count">0</span>
+                </div>
+                <div class="kanban-cards"></div>
+            </div>
+            <div class="kanban-coluna" data-estado="validado">
+                <div class="coluna-header">
+                    <div class="coluna-titulo">
+                        <span class="coluna-icon sucesso"></span>
+                        <h2>Validado</h2>
+                    </div>
+                    <div class="coluna-actions">
+                        <span class="count">0</span>
+                        <button class="btn-arquivar-todos" title="Arquivar todos">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/>
+                                <line x1="10" y1="12" x2="14" y2="12"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="kanban-cards"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Hidden legacy elements for JS compatibility -->
+    <select id="filtro-tema-kanban" class="hidden" style="display:none!important">
+        <option value="">Tema</option>
+    </select>
+
+    <!-- Modal de Preview em Tela Cheia -->
+    <div id="preview-modal" class="modal hidden">
+        <!-- Header Principal do Documento -->
+        <header class="preview-header">
+            <div class="preview-header-left">
+                <button id="btn-home" class="btn-voltar" title="Voltar ao Kanban">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                </button>
+                <div class="processo-info">
+                    <span class="processo-label">Processo</span>
+                    <h1 id="preview-titulo" class="processo-numero"></h1>
+                </div>
+                <button id="btn-copiar-numero" class="btn-copiar-numero" title="Copiar numero">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="preview-header-center">
+                <div id="preview-meta-bar" class="meta-bar">
+                    <!-- Populated by JS: tema, urgencia, dias conclusos -->
+                </div>
+            </div>
+
+            <div class="preview-header-right">
+                <div class="action-group-secondary">
+                    <button id="btn-abrir-pasta" class="btn-secondary" title="Abrir pasta do processo">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                        </svg>
+                        <span>Pasta</span>
+                    </button>
+                    <div class="mover-dropdown">
+                        <button id="btn-mover-toggle" class="btn-secondary btn-mover" title="Mover para outra coluna">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="15 10 20 15 15 20"/>
+                                <path d="M4 4v7a4 4 0 0 0 4 4h12"/>
+                            </svg>
+                            <span>Mover</span>
+                            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="6 9 12 15 18 9"/>
+                            </svg>
+                        </button>
+                        <div id="mover-menu" class="mover-menu hidden">
+                            <button class="mover-item" data-destino="por-analisar">
+                                <span class="coluna-dot entrada"></span>
+                                Por Analisar
+                            </button>
+                            <button class="mover-item" data-destino="analisando">
+                                <span class="coluna-dot progresso"></span>
+                                Pesquisar
+                            </button>
+                            <button class="mover-item" data-destino="pendencias">
+                                <span class="coluna-dot alerta"></span>
+                                Complexo
+                            </button>
+                            <button class="mover-item" data-destino="validado">
+                                <span class="coluna-dot sucesso"></span>
+                                Validado
+                            </button>
+                        </div>
+                    </div>
+                    <button id="btn-arquivar-modal" class="btn-secondary btn-arquivar" title="Arquivar processo">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="3 6 5 6 21 6"/>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        </svg>
+                    </button>
+                </div>
+                <button id="btn-fechar-preview" class="btn-fechar" title="Fechar (Esc)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Corpo do Documento - Layout 50/50 Centralizado -->
+        <div class="preview-body">
+            <!-- Coluna de Analise -->
+            <section class="preview-panel preview-panel-analise">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <span class="panel-marker analise"></span>
+                        <h2>Analise</h2>
+                    </div>
+                    <div class="panel-header-right">
+                        <!-- Dropdown de artefatos -->
+                        <div id="artefatos-dropdown" class="artefatos-dropdown hidden">
+                            <button id="artefatos-toggle" class="artefatos-toggle" title="Selecionar artefato">
+                                <span id="artefatos-icon" class="artefatos-current-icon"></span>
+                                <span id="artefatos-label" class="artefatos-current-label">Analise</span>
+                                <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="6 9 12 15 18 9"/>
+                                </svg>
+                            </button>
+                            <div id="artefatos-menu" class="artefatos-menu hidden"></div>
+                        </div>
+                        <!-- Botoes de edicao (painel analise) -->
+                        <div id="edit-controls-analise" class="edit-controls">
+                            <button id="btn-editar-analise" class="btn-editar" title="Editar arquivo">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                </svg>
+                                <span>Editar</span>
+                            </button>
+                            <button id="btn-salvar-analise" class="btn-salvar-edicao hidden" title="Salvar alteracoes">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                                <span>Salvar</span>
+                            </button>
+                            <button id="btn-cancelar-analise" class="btn-cancelar-edicao hidden" title="Cancelar edicao">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                                </svg>
+                                <span>Cancelar</span>
+                            </button>
+                        </div>
+                        <!-- Botao copiar analise -->
+                        <button id="btn-copiar-analise" class="btn-copiar-analise" title="Copiar conteudo da analise">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                            </svg>
+                            <span>Copiar</span>
+                        </button>
+                        <div class="processo-actions">
+                            <button id="btn-favorito-preview" class="btn-processo-action" title="Marcar como favorito">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                                </svg>
+                                <span>Favorito</span>
+                            </button>
+                            <button id="btn-nota" class="btn-processo-action" title="Adicionar nota ao processo">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                </svg>
+                                <span>Nota</span>
+                                <span id="nota-indicator" class="processo-action-indicator hidden"></span>
+                            </button>
+                            <button id="btn-anexos" class="btn-processo-action" title="Gerenciar anexos do processo">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+                                </svg>
+                                <span>Anexos</span>
+                                <span id="anexos-badge" class="processo-action-badge hidden">0</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <!-- Container de conteudo dinamico -->
+                <div id="artefatos-container" class="artefatos-container">
+                    <div id="preview-analise" class="preview-content preview-analise"></div>
+                </div>
+            </section>
+
+            <!-- Coluna de Minuta -->
+            <section class="preview-panel preview-panel-minuta">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <span class="panel-marker minuta"></span>
+                        <h2>Minuta</h2>
+                    </div>
+                    <div class="panel-actions">
+                        <div id="minuta-tabs" class="minuta-tabs hidden">
+                            <button class="minuta-tab active" data-tab="sentenca">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                </svg>
+                                Sentenca
+                            </button>
+                        </div>
+                        <!-- Botoes de edicao (painel minuta) -->
+                        <div id="edit-controls-minuta" class="edit-controls">
+                            <button id="btn-editar-minuta" class="btn-editar" title="Editar arquivo">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                </svg>
+                                <span>Editar</span>
+                            </button>
+                            <button id="btn-salvar-minuta" class="btn-salvar-edicao hidden" title="Salvar alteracoes">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                                <span>Salvar</span>
+                            </button>
+                            <button id="btn-cancelar-minuta" class="btn-cancelar-edicao hidden" title="Cancelar edicao">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                                </svg>
+                                <span>Cancelar</span>
+                            </button>
+                        </div>
+                        <button id="btn-copiar-minuta" class="btn-copiar-minuta" title="Copiar conteudo da minuta">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                            </svg>
+                            <span>Copiar</span>
+                        </button>
+                    </div>
+                </div>
+                <article id="preview-minuta" class="preview-content preview-minuta"></article>
+            </section>
+        </div>
+    </div>
+
+    <!-- Modal de Notas -->
+    <div id="nota-modal" class="nota-modal hidden">
+        <div class="nota-modal-overlay"></div>
+        <div class="nota-modal-content">
+            <div class="nota-modal-header">
+                <h3>Nota do Processo</h3>
+                <button id="btn-fechar-nota" class="btn-fechar-nota" title="Fechar">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="nota-modal-body">
+                <textarea
+                    id="nota-textarea"
+                    class="nota-textarea"
+                    placeholder="Adicione uma nota sobre este processo. Use para registrar observacoes, pendencias, lembretes ou qualquer informacao relevante para a analise..."
+                    rows="12"
+                    maxlength="10000"
+                ></textarea>
+                <div class="nota-contador">
+                    <span id="nota-chars">0</span>/10000
+                </div>
+            </div>
+            <div class="nota-modal-footer">
+                <button id="btn-apagar-nota" class="btn-nota-action btn-apagar hidden" title="Apagar nota">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                    </svg>
+                    Apagar
+                </button>
+                <div class="nota-modal-spacer"></div>
+                <button id="btn-cancelar-nota" class="btn-nota-action btn-cancelar">
+                    Cancelar
+                </button>
+                <button id="btn-salvar-nota" class="btn-nota-action btn-salvar">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                    Salvar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Painel de Anexos -->
+    <div id="anexos-panel" class="anexos-panel hidden">
+        <div class="anexos-header">
+            <h4>Anexos do Processo</h4>
+            <button id="btn-fechar-anexos" class="btn-fechar-mini">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+        <div id="anexos-dropzone" class="anexos-dropzone">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <p>Arraste arquivos aqui ou</p>
+            <label class="btn-upload">
+                <input type="file" id="input-anexo" multiple hidden>
+                Selecionar Arquivos
+            </label>
+        </div>
+        <div id="anexos-lista" class="anexos-lista"></div>
+        <div id="anexos-vazio" class="anexos-vazio hidden">
+            <p>Nenhum anexo</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="/static/app.js"></script>
+</body>
+</html>

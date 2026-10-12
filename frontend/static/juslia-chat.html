@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JUSLIA - Pesquisa de Jurisprudência</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Styrene+A:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        /* ============================================
+           JUSLIA - Anthropic-inspired Design System
+           ============================================ */
+
+        :root {
+            /* Anthropic Colors */
+            --coral: #D97757;
+            --coral-light: #E8956F;
+            --coral-dark: #C45A3A;
+            --coral-bg: rgba(217, 119, 87, 0.08);
+            --coral-bg-hover: rgba(217, 119, 87, 0.12);
+
+            /* Typography */
+            --font-display: 'Styrene A', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-body: 'Source Serif 4', Georgia, serif;
+            --font-mono: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+
+            /* Spacing */
+            --space-xs: 4px;
+            --space-sm: 8px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --space-xl: 32px;
+            --space-2xl: 48px;
+
+            /* Transitions */
+            --transition-fast: 150ms ease;
+            --transition-normal: 250ms ease;
+        }
+
+        /* Light Theme (default) */
+        [data-theme="light"] {
+            --bg-primary: #FDFCFB;
+            --bg-secondary: #F7F5F3;
+            --bg-tertiary: #EFEBE8;
+            --bg-message: #FFFFFF;
+
+            --text-primary: #1A1715;
+            --text-secondary: #5C5652;
+            --text-tertiary: #8C8680;
+
+            --border-light: #E8E4E0;
+            --border-medium: #D9D4CE;
+
+            --shadow-sm: 0 1px 2px rgba(26, 23, 21, 0.04);
+            --shadow-md: 0 4px 12px rgba(26, 23, 21, 0.08);
+            --shadow-lg: 0 8px 24px rgba(26, 23, 21, 0.12);
+
+            --user-msg-bg: var(--coral);
+            --user-msg-text: #FFFFFF;
+        }
+
+        /* Dark Theme */
+        [data-theme="dark"] {
+            --bg-primary: #1A1816;
+            --bg-secondary: #242220;
+            --bg-tertiary: #2E2C2A;
+            --bg-message: #2E2C2A;
+
+            --text-primary: #F5F3F1;
+            --text-secondary: #B8B4AF;
+            --text-tertiary: #7A756F;
+
+            --border-light: #3A3836;
+            --border-medium: #4A4644;
+
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
+
+            --user-msg-bg: var(--coral);
+            --user-msg-text: #FFFFFF;
+
+            --coral-bg: rgba(217, 119, 87, 0.15);
+            --coral-bg-hover: rgba(217, 119, 87, 0.25);
+        }
+
+        /* Reset */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            font-size: 16px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.6;
+        }
+
+        /* ============================================
+           Header - Minimal & Refined
+           ============================================ */
+
+        .header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border-light);
+            padding: var(--space-md) var(--space-lg);
+        }
+
+        .header-content {
+            max-width: 840px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: var(--space-lg);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .logo-mark {
+            width: 32px;
+            height: 32px;
+            background: var(--coral);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-family: var(--font-display);
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .logo-text {
+            font-family: var(--font-display);
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+        }
+
+        .logo-subtitle {
+            font-family: var(--font-body);
+            font-size: 13px;
+            color: var(--text-tertiary);
+            margin-left: var(--space-sm);
+            padding-left: var(--space-sm);
+            border-left: 1px solid var(--border-medium);
+        }
+
+        .connection-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            background: var(--bg-secondary);
+            border-radius: 100px;
+            font-size: 12px;
+            color: var(--text-tertiary);
+        }
+
+        .connection-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--text-tertiary);
+            transition: var(--transition-fast);
+        }
+
+        .connection-dot.connected {
+            background: #22C55E;
+        }
+
+        .connection-dot.disconnected {
+            background: #EF4444;
+        }
+
+        .connection-dot.connecting {
+            background: #F59E0B;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .btn-new-chat {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: 8px 16px;
+            background: transparent;
+            border: 1px solid var(--border-medium);
+            border-radius: 8px;
+            font-family: var(--font-display);
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+
+        .btn-new-chat:hover {
+            background: var(--bg-secondary);
+            border-color: var(--coral);
+            color: var(--coral);
+        }
+
+        .btn-new-chat svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Theme Toggle */
+        .btn-theme {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            background: transparent;
+            border: 1px solid var(--border-medium);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+
+        .btn-theme:hover {
+            background: var(--bg-secondary);
+            border-color: var(--coral);
+            color: var(--coral);
+        }
+
+        .btn-theme svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .btn-theme .icon-sun,
+        .btn-theme .icon-moon {
+            display: none;
+        }
+
+        [data-theme="light"] .btn-theme .icon-moon {
+            display: block;
+        }
+
+        [data-theme="dark"] .btn-theme .icon-sun {
+            display: block;
+        }
+
+        /* ============================================
+           Main Chat Container
+           ============================================ */
+
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 840px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 0 var(--space-lg);
+        }
+
+        /* ============================================
+           Messages Area
+           ============================================ */
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: var(--space-xl) 0;
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-xl);
+        }
+
+        /* Welcome Screen */
+        .welcome {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: var(--space-2xl) var(--space-lg);
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .welcome-icon {
+            width: 64px;
+            height: 64px;
+            background: var(--coral-bg);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: var(--space-lg);
+        }
+
+        .welcome-icon svg {
+            width: 32px;
+            height: 32px;
+            color: var(--coral);
+        }
+
+        .welcome h1 {
+            font-family: var(--font-display);
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--space-sm);
+            letter-spacing: -0.02em;
+        }
+
+        .welcome p {
+            font-size: 16px;
+            color: var(--text-secondary);
+            max-width: 480px;
+            margin-bottom: var(--space-xl);
+        }
+
+        .suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-sm);
+            justify-content: center;
+            max-width: 600px;
+        }
+
+        .suggestion-btn {
+            padding: 10px 16px;
+            background: var(--bg-message);
+            border: 1px solid var(--border-light);
+            border-radius: 100px;
+            font-family: var(--font-body);
+            font-size: 14px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition-fast);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .suggestion-btn:hover {
+            background: var(--coral-bg);
+            border-color: var(--coral);
+            color: var(--coral);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Message Bubbles */
+        .message {
+            display: flex;
+            flex-direction: column;
+            animation: messageIn 0.3s ease;
+        }
+
+        @keyframes messageIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message-user {
+            align-items: flex-end;
+        }
+
+        .message-assistant {
+            align-items: flex-start;
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-sm);
+        }
+
+        .message-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .message-user .message-avatar {
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+        }
+
+        .message-assistant .message-avatar {
+            background: var(--coral);
+            color: white;
+        }
+
+        .message-sender {
+            font-family: var(--font-display);
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-tertiary);
+        }
+
+        .message-content {
+            max-width: 85%;
+            padding: var(--space-md) var(--space-lg);
+            border-radius: 16px;
+            line-height: 1.7;
+        }
+
+        .message-user .message-content {
+            background: var(--user-msg-bg);
+            color: var(--user-msg-text);
+            border-bottom-right-radius: 4px;
+        }
+
+        .message-assistant .message-content {
+            background: var(--bg-message);
+            border: 1px solid var(--border-light);
+            color: var(--text-primary);
+            border-bottom-left-radius: 4px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* Markdown Styling */
+        .message-assistant .message-content h1,
+        .message-assistant .message-content h2,
+        .message-assistant .message-content h3 {
+            font-family: var(--font-display);
+            color: var(--text-primary);
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+            letter-spacing: -0.01em;
+        }
+
+        .message-assistant .message-content h1 { font-size: 1.4em; }
+        .message-assistant .message-content h2 { font-size: 1.2em; }
+        .message-assistant .message-content h3 { font-size: 1.1em; }
+
+        .message-assistant .message-content h1:first-child,
+        .message-assistant .message-content h2:first-child,
+        .message-assistant .message-content h3:first-child {
+            margin-top: 0;
+        }
+
+        .message-assistant .message-content p {
+            margin: 0.75em 0;
+        }
+
+        .message-assistant .message-content p:first-child {
+            margin-top: 0;
+        }
+
+        .message-assistant .message-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        .message-assistant .message-content ul,
+        .message-assistant .message-content ol {
+            padding-left: 1.5em;
+            margin: 0.75em 0;
+        }
+
+        .message-assistant .message-content li {
+            margin: 0.4em 0;
+        }
+
+        .message-assistant .message-content strong {
+            color: var(--coral-dark);
+            font-weight: 600;
+        }
+
+        .message-assistant .message-content code {
+            background: var(--bg-secondary);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: var(--font-mono);
+            font-size: 0.9em;
+        }
+
+        .message-assistant .message-content pre {
+            background: var(--bg-secondary);
+            padding: var(--space-md);
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1em 0;
+        }
+
+        .message-assistant .message-content pre code {
+            background: none;
+            padding: 0;
+        }
+
+        .message-assistant .message-content blockquote {
+            border-left: 3px solid var(--coral);
+            margin: 1em 0;
+            padding-left: 1em;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        .message-assistant .message-content a {
+            color: var(--coral);
+            text-decoration: underline;
+            text-underline-offset: 2px;
+        }
+
+        .message-assistant .message-content a:hover {
+            color: var(--coral-dark);
+        }
+
+        .message-assistant .message-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1em 0;
+            font-size: 0.95em;
+        }
+
+        .message-assistant .message-content th,
+        .message-assistant .message-content td {
+            border: 1px solid var(--border-light);
+            padding: 10px 12px;
+            text-align: left;
+        }
+
+        .message-assistant .message-content th {
+            background: var(--bg-secondary);
+            font-family: var(--font-display);
+            font-weight: 500;
+        }
+
+        /* Error Message */
+        .message-error .message-content {
+            background: #FEF2F2;
+            border-color: #FECACA;
+            color: #991B1B;
+        }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: var(--space-md) var(--space-lg);
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-dots span {
+            width: 8px;
+            height: 8px;
+            background: var(--coral);
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .typing-dots span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+        .typing-dots span:nth-child(3) { animation-delay: 0s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        .typing-text {
+            font-size: 14px;
+            color: var(--text-tertiary);
+        }
+
+        /* Streaming cursor */
+        .streaming::after {
+            content: '▋';
+            animation: blink 1s step-end infinite;
+            color: var(--coral);
+            margin-left: 2px;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* ============================================
+           Input Area
+           ============================================ */
+
+        .input-area {
+            position: sticky;
+            bottom: 0;
+            background: linear-gradient(to top, var(--bg-primary) 85%, transparent);
+            padding: var(--space-lg) 0 var(--space-xl);
+        }
+
+        .input-container {
+            display: flex;
+            align-items: flex-end;
+            gap: var(--space-sm);
+            background: var(--bg-message);
+            border: 1px solid var(--border-medium);
+            border-radius: 16px;
+            padding: var(--space-sm);
+            box-shadow: var(--shadow-md);
+            transition: var(--transition-fast);
+        }
+
+        .input-container:focus-within {
+            border-color: var(--coral);
+            box-shadow: var(--shadow-lg), 0 0 0 3px var(--coral-bg);
+        }
+
+        .input-field {
+            flex: 1;
+            padding: var(--space-sm) var(--space-md);
+            border: none;
+            background: transparent;
+            font-family: var(--font-body);
+            font-size: 16px;
+            color: var(--text-primary);
+            resize: none;
+            min-height: 24px;
+            max-height: 150px;
+            line-height: 1.5;
+        }
+
+        .input-field:focus {
+            outline: none;
+        }
+
+        .input-field::placeholder {
+            color: var(--text-tertiary);
+        }
+
+        .input-field:disabled {
+            opacity: 0.6;
+        }
+
+        .btn-send {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: var(--coral);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            flex-shrink: 0;
+        }
+
+        .btn-send:hover:not(:disabled) {
+            background: var(--coral-dark);
+            transform: scale(1.05);
+        }
+
+        .btn-send:disabled {
+            background: var(--bg-tertiary);
+            color: var(--text-tertiary);
+            cursor: not-allowed;
+        }
+
+        .btn-send svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .input-footer {
+            text-align: center;
+            margin-top: var(--space-sm);
+            font-size: 12px;
+            color: var(--text-tertiary);
+        }
+
+        /* ============================================
+           Responsive Design
+           ============================================ */
+
+        @media (max-width: 768px) {
+            .header {
+                padding: var(--space-sm) var(--space-md);
+            }
+
+            .header-content {
+                flex-wrap: wrap;
+                gap: var(--space-sm);
+            }
+
+            .logo-subtitle {
+                display: none;
+            }
+
+            .main {
+                padding: 0 var(--space-md);
+            }
+
+            .messages {
+                padding: var(--space-md) 0;
+                gap: var(--space-md);
+            }
+
+            .welcome h1 {
+                font-size: 24px;
+            }
+
+            .suggestions {
+                flex-direction: column;
+            }
+
+            .suggestion-btn {
+                width: 100%;
+            }
+
+            .message-content {
+                max-width: 92%;
+                padding: var(--space-sm) var(--space-md);
+            }
+
+            .input-area {
+                padding: var(--space-md) 0 var(--space-lg);
+            }
+        }
+
+        /* Hide scrollbar but keep functionality */
+        .messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .messages::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .messages::-webkit-scrollbar-thumb {
+            background: var(--border-medium);
+            border-radius: 3px;
+        }
+
+        .messages::-webkit-scrollbar-thumb:hover {
+            background: var(--text-tertiary);
+        }
+    </style>
+</head>
+<body data-theme="light">
+    <script>
+        // Apply saved theme immediately to prevent flash
+        (function() {
+            const saved = localStorage.getItem('juslia-theme');
+            if (saved) {
+                document.body.setAttribute('data-theme', saved);
+            } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.body.setAttribute('data-theme', 'dark');
+            }
+        })();
+    </script>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="header-left">
+                <button id="btn-new-chat" class="btn-new-chat">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 5v14M5 12h14"/>
+                    </svg>
+                    Nova conversa
+                </button>
+                <div class="logo">
+                    <div class="logo-mark">J</div>
+                    <span class="logo-text">JUSLIA</span>
+                    <span class="logo-subtitle">Pesquisa de Jurisprudência TRF5</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="connection-badge">
+                    <span id="connection-dot" class="connection-dot connecting"></span>
+                    <span id="connection-text">Conectando...</span>
+                </div>
+                <button id="btn-theme" class="btn-theme" title="Alternar tema">
+                    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"/>
+                        <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                    </svg>
+                    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <!-- Messages -->
+        <div id="messages" class="messages">
+            <!-- Welcome Screen -->
+            <div id="welcome" class="welcome">
+                <div class="welcome-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+                    </svg>
+                </div>
+                <h1>Como posso ajudar?</h1>
+                <p>Pesquise jurisprudência do TRF5 em linguagem natural. Busco acórdãos, ementas e decisões para você.</p>
+                <div class="suggestions">
+                    <button type="button" class="suggestion-btn">Qual a posição do TRF5 sobre BPC para estrangeiros?</button>
+                    <button type="button" class="suggestion-btn">Decisões sobre aposentadoria especial de eletricista</button>
+                    <button type="button" class="suggestion-btn">Prescrição quinquenal na 1ª Turma</button>
+                    <button type="button" class="suggestion-btn">Pensão por morte para união homoafetiva</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="input-area">
+            <form id="chat-form" class="input-container">
+                <textarea
+                    id="input-field"
+                    class="input-field"
+                    placeholder="Pergunte sobre jurisprudência do TRF5..."
+                    rows="1"
+                ></textarea>
+                <button type="submit" id="btn-send" class="btn-send">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                    </svg>
+                </button>
+            </form>
+            <div class="input-footer">
+                JUSLIA usa Claude + MCP JULIA para pesquisar jurisprudência do TRF5
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // ============================================
+        // JUSLIA Chat - WebSocket Client
+        // ============================================
+
+        // State
+        let ws = null;
+        let sessionId = null;
+        let isProcessing = false;
+        let currentAssistantMessage = null;
+        let reconnectAttempts = 0;
+        const MAX_RECONNECT_ATTEMPTS = 5;
+
+        // DOM Elements
+        const messagesContainer = document.getElementById('messages');
+        const welcomeScreen = document.getElementById('welcome');
+        const chatForm = document.getElementById('chat-form');
+        const inputField = document.getElementById('input-field');
+        const btnSend = document.getElementById('btn-send');
+        const btnNewChat = document.getElementById('btn-new-chat');
+        const btnTheme = document.getElementById('btn-theme');
+        const connectionDot = document.getElementById('connection-dot');
+        const connectionText = document.getElementById('connection-text');
+
+        // ============================================
+        // Theme Toggle
+        // ============================================
+
+        function toggleTheme() {
+            const current = document.body.getAttribute('data-theme');
+            const next = current === 'light' ? 'dark' : 'light';
+            document.body.setAttribute('data-theme', next);
+            localStorage.setItem('juslia-theme', next);
+        }
+
+        btnTheme.addEventListener('click', toggleTheme);
+
+        // ============================================
+        // WebSocket Connection
+        // ============================================
+
+        function connectWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/api/julia/ws`;
+
+            updateConnectionStatus('connecting');
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = () => {
+                console.log('[JUSLIA] Conectado');
+                updateConnectionStatus('connected');
+                reconnectAttempts = 0;
+            };
+
+            ws.onclose = (event) => {
+                console.log('[JUSLIA] Desconectado:', event.code);
+                updateConnectionStatus('disconnected');
+
+                if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+                    reconnectAttempts++;
+                    const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
+                    setTimeout(connectWebSocket, delay);
+                }
+            };
+
+            ws.onerror = (error) => {
+                console.error('[JUSLIA] Erro:', error);
+            };
+
+            ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    handleServerMessage(data);
+                } catch (e) {
+                    console.error('[JUSLIA] Erro ao parsear:', e);
+                }
+            };
+        }
+
+        function updateConnectionStatus(status) {
+            connectionDot.className = 'connection-dot ' + status;
+            const labels = {
+                connected: 'Conectado',
+                disconnected: 'Desconectado',
+                connecting: 'Conectando...'
+            };
+            connectionText.textContent = labels[status] || status;
+        }
+
+        // ============================================
+        // Message Handling
+        // ============================================
+
+        function handleServerMessage(data) {
+            switch (data.type) {
+                case 'processing':
+                    if (data.session_id) sessionId = data.session_id;
+                    showTypingIndicator();
+                    break;
+
+                case 'delta':
+                    updateStreamingMessage(data.content);
+                    break;
+
+                case 'complete':
+                    finalizeMessage(data.content);
+                    if (data.session_id) sessionId = data.session_id;
+                    break;
+
+                case 'error':
+                    removeTypingIndicator();
+                    addMessage('error', data.content);
+                    setProcessing(false);
+                    break;
+            }
+        }
+
+        function showTypingIndicator() {
+            removeTypingIndicator();
+
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'message message-assistant';
+            msgDiv.id = 'typing-indicator';
+
+            msgDiv.innerHTML = `
+                <div class="message-header">
+                    <div class="message-avatar">J</div>
+                    <span class="message-sender">JUSLIA</span>
+                </div>
+                <div class="message-content">
+                    <div class="typing-indicator">
+                        <div class="typing-dots">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                        <span class="typing-text">Pesquisando...</span>
+                    </div>
+                </div>
+            `;
+
+            messagesContainer.appendChild(msgDiv);
+            scrollToBottom();
+        }
+
+        function removeTypingIndicator() {
+            const indicator = document.getElementById('typing-indicator');
+            if (indicator) indicator.remove();
+        }
+
+        function updateStreamingMessage(deltaContent) {
+            removeTypingIndicator();
+
+            if (!currentAssistantMessage) {
+                const msgDiv = document.createElement('div');
+                msgDiv.className = 'message message-assistant';
+                msgDiv.id = 'streaming-message';
+
+                msgDiv.innerHTML = `
+                    <div class="message-header">
+                        <div class="message-avatar">J</div>
+                        <span class="message-sender">JUSLIA</span>
+                    </div>
+                    <div class="message-content streaming" data-raw=""></div>
+                `;
+
+                messagesContainer.appendChild(msgDiv);
+                currentAssistantMessage = msgDiv.querySelector('.message-content');
+            }
+
+            currentAssistantMessage.dataset.raw += deltaContent;
+            currentAssistantMessage.innerHTML = marked.parse(currentAssistantMessage.dataset.raw);
+            scrollToBottom();
+        }
+
+        function finalizeMessage(fullContent) {
+            removeTypingIndicator();
+
+            if (currentAssistantMessage) {
+                currentAssistantMessage.classList.remove('streaming');
+                if (fullContent) {
+                    currentAssistantMessage.innerHTML = marked.parse(fullContent);
+                }
+                currentAssistantMessage.parentElement.id = '';
+                currentAssistantMessage = null;
+            } else if (fullContent) {
+                addMessage('assistant', fullContent);
+            }
+
+            setProcessing(false);
+        }
+
+        function addMessage(type, content) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message message-${type}`;
+
+            if (type === 'user') {
+                msgDiv.innerHTML = `
+                    <div class="message-header">
+                        <div class="message-avatar">Eu</div>
+                        <span class="message-sender">Você</span>
+                    </div>
+                    <div class="message-content">${escapeHtml(content)}</div>
+                `;
+            } else if (type === 'assistant') {
+                msgDiv.innerHTML = `
+                    <div class="message-header">
+                        <div class="message-avatar">J</div>
+                        <span class="message-sender">JUSLIA</span>
+                    </div>
+                    <div class="message-content">${marked.parse(content)}</div>
+                `;
+            } else if (type === 'error') {
+                msgDiv.innerHTML = `
+                    <div class="message-header">
+                        <div class="message-avatar">!</div>
+                        <span class="message-sender">Erro</span>
+                    </div>
+                    <div class="message-content">${escapeHtml(content)}</div>
+                `;
+            }
+
+            messagesContainer.appendChild(msgDiv);
+            scrollToBottom();
+            return msgDiv;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function scrollToBottom() {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // ============================================
+        // Input Handling
+        // ============================================
+
+        function setProcessing(processing) {
+            isProcessing = processing;
+            btnSend.disabled = processing;
+            inputField.disabled = processing;
+            if (!processing) inputField.focus();
+        }
+
+        function sendMessage(text) {
+            const message = text.trim();
+            if (!message || isProcessing) return false;
+
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                addMessage('error', 'Conexão perdida. Reconectando...');
+                connectWebSocket();
+                return false;
+            }
+
+            // Hide welcome
+            if (welcomeScreen) {
+                welcomeScreen.style.display = 'none';
+            }
+
+            // Add user message
+            addMessage('user', message);
+
+            // Clear input
+            inputField.value = '';
+            inputField.style.height = 'auto';
+
+            // Set processing
+            setProcessing(true);
+
+            // Send
+            ws.send(JSON.stringify({
+                message: message,
+                session_id: sessionId
+            }));
+
+            return true;
+        }
+
+        // Auto-resize textarea
+        inputField.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 150) + 'px';
+        });
+
+        // Enter to send (Shift+Enter for newline)
+        inputField.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage(this.value);
+            }
+        });
+
+        // Form submit
+        chatForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            sendMessage(inputField.value);
+        });
+
+        // Suggestion buttons
+        document.querySelectorAll('.suggestion-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                sendMessage(btn.textContent);
+            });
+        });
+
+        // New chat button
+        btnNewChat.addEventListener('click', () => {
+            // Clear messages
+            messagesContainer.innerHTML = '';
+            messagesContainer.appendChild(welcomeScreen);
+            welcomeScreen.style.display = 'flex';
+
+            // Reset state
+            sessionId = null;
+            currentAssistantMessage = null;
+
+            // Reconnect
+            if (ws) ws.close();
+            setTimeout(connectWebSocket, 100);
+        });
+
+        // Initialize
+        connectWebSocket();
+    </script>
+</body>
+</html>

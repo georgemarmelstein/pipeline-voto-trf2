@@ -1,0 +1,19 @@
+# Servidores MCP (trf2-eproc, bnp-api)
+mcp>=1.0.0
+httpx>=0.25.0
+pydantic>=2.0.0
+beautifulsoup4>=4.12.0
+
+# Conversão PDF -> TXT com OCR (exige Tesseract com idioma português e Poppler instalados no sistema)
+pdfplumber
+PyPDF2
+pdf2image
+pytesseract
+
+# Kanban (frontend em http://127.0.0.1:5000)
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+python-multipart>=0.0.6
+
+# Testes
+pytest
